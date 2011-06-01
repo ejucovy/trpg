@@ -1,0 +1,95 @@
+    td {
+      background-image: url(/static/images/grass.jpg);
+      height: 64; width: 64;
+    }
+    table {
+      border-spacing: 0;
+    }
+    div.sprite.ready {
+      border: 1px dotted yellow;
+    }
+    td.available {
+      border: 1px dotted blue;
+    }
+    div.sprite {
+      height: 64; width: 64;
+      position: absolute;
+    }
+
+    div.sprite[data-type="rock"] {
+      background-image: url(/static/images/rock.jpg);
+    }
+    div.sprite[data-team="red"][data-job="knight"] {
+      background-image: url(/static/images/red/knight.png);
+    }
+    div.sprite[data-team="red"][data-job="healer"] {
+      background-image: url(/static/images/red/healer.png);
+    }
+    div.sprite[data-team="red"][data-job="winger"] {
+      background-image: url(/static/images/red/winger.png);
+    }
+    div.sprite[data-team="red"][data-job="wizard"] {
+      background-image: url(/static/images/red/wizard.png);
+    }
+    div.sprite[data-team="blue"][data-job="knight"] {
+      background-image: url(/static/images/blue/knight.png);
+    }
+    div.sprite[data-team="blue"][data-job="healer"] {
+      background-image: url(/static/images/blue/healer.png);
+    }
+    div.sprite[data-team="blue"][data-job="winger"] {
+      background-image: url(/static/images/blue/winger.png);
+    }
+    div.sprite[data-team="blue"][data-job="smallrus"] {
+      background-image: url(/static/images/blue/smallrus.png);
+    }
+
+    div.sprite.attacking[data-team="red"][data-job="knight"] {
+      background-image: url(/static/images/red/knight-attack.png);
+    }
+    div.sprite.attacking[data-team="red"][data-job="healer"] {
+      background-image: url(/static/images/red/healer-attack.png);
+    }
+    div.sprite.attacking[data-team="red"][data-job="winger"] {
+      background-image: url(/static/images/red/winger-attack.png);
+    }
+    div.sprite.attacking[data-team="red"][data-job="wizard"] {
+      background-image: url(/static/images/red/wizard-attack.png);
+    }
+    div.sprite.attacking[data-team="blue"][data-job="knight"] {
+      background-image: url(/static/images/blue/knight-attack.png);
+    }
+    div.sprite.attacking[data-team="blue"][data-job="healer"] {
+      background-image: url(/static/images/blue/healer-attack.png);
+    }
+    div.sprite.attacking[data-team="blue"][data-job="winger"] {
+      background-image: url(/static/images/blue/winger-attack.png);
+    }
+    div.sprite.attacking[data-team="blue"][data-job="smallrus"] {
+      background-image: url(/static/images/blue/smallrus-attack.png);
+    }
+
+    div.sprite.hurting[data-team="red"][data-job="knight"] {
+      background-image: url(/static/images/red/knight-hurt.png);
+    }
+    div.sprite.hurting[data-team="red"][data-job="healer"] {
+      background-image: url(/static/images/red/healer-hurt.png);
+    }
+    div.sprite.hurting[data-team="red"][data-job="winger"] {
+      background-image: url(/static/images/red/winger-hurt.png);
+    }
+    div.sprite.hurting[data-team="red"][data-job="wizard"] {
+      background-image: url(/static/images/red/wizard-hurt.png);
+    }
+    div.sprite.hurting[data-team="blue"][data-job="knight"] {
+      background-image: url(/static/images/blue/knight-hurt.png);
+    }
+    div.sprite.hurting[data-team="blue"][data-job="healer"] {
+      background-image: url(/static/images/blue/healer-hurt.png);
+    }
+    div.sprite.hurting[data-team="blue"][data-job="winger"] {
+      background-image: url(/static/images/blue/winger-hurt.png);
+    }
+    div.sprite.hurting[data-team="blue"][data-job="smallrus"] {
+      background-image: url(/static/images/blue/smallrus-hurt.png);
+    }

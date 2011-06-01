@@ -1,0 +1,40 @@
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="/static/board.css" />
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
+  <script type="text/javascript" src="{{HOOKBOX_URL}}/static/hookbox.js"></script>
+  <script type="text/javascript" src="/static/game.js"></script>
+  <script type="text/javascript">
+    {% if request.user.is_authenticted %}
+    var username = "{{request.user.username}}";
+    {% else %}
+    var username = prompt("What is your name?");
+    {% endif %}
+
+    $(window).load(function() {    
+      var room = new GameRoom("{{room.get_absolute_url}}",
+                              username, "{{room.pk}}",
+                              "{{HOOKBOX_URL}}"
+                              );
+      room.load();
+      window.gameroom = room;
+    });
+
+  </script>
+</head>
+<body>
+  <table id="board" style="border: 1px solid black;">{% for row in rows %}
+    <tr>{% for col in cols %}
+      <td>
+      </td>{% endfor %}
+    </tr>{% endfor %}
+  </table>
+  <h3>Info</h3>
+  <div id="info">
+  </div>
+  <h3>Notifications</h3>
+  <div id="status">
+  </div>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<h1>Or create a new game room</h1>
+<form method="POST">
+  {% csrf_token %}
+  <input type="submit" />
+</form>
+<h1>Choose a game room to join</h1>
+<ul>
+{% for room in rooms %}
+<li>{{room.id}}: {{room.num_players}}</li>
+{% endfor %}
+</ul>
+
