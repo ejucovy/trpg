@@ -9,6 +9,7 @@ import random
 import urllib
 from django.conf import settings
 from django.utils import simplejson
+from bagels.main import i18n
 
 def start_board():
     board = Board()
@@ -105,7 +106,7 @@ def room_move(request, room_id):
     room.save_board(board)
     room.save()
 
-    announce_move(room, (row, col), (row1, col1))
+    announce_move(room, (row, col), (row1, col1), name)
     return HttpResponse("ok")
 
 @csrf_exempt
@@ -130,34 +131,49 @@ def room_act(request, room_id):
     actor = board.get_item(srcrow, srccol)
     target = board.get_item(row, col)
 
+    actor_before = dict(actor.data)
+    target_before = dict(target.data)
+    
     health = int(target.data['health']) - 4
-    if health < 0:
+    if health < 1:
         board.pop_item(row, col)
     target.data['health'] = health
 
+    msgs = i18n.attack(actor, target, 
+                       actor_before, target_before)
     room.save_board(board)
     room.save()
 
-    announce_action(room, action, (srcrow, srccol), (row, col))
+    announce_action(room, action, 
+                    (srcrow, srccol), (row, col), 
+                    name, msgs)
     return HttpResponse("ok")
 
-def announce_action(room, action, from_, to):
+def announce_action(room, action, from_, to, 
+                    username, msgs=[[],[]]):
     payload = {'msgtype': 'act'}
     payload['from'] = {'row': from_[0], 'col': from_[1]}
     payload['to'] = {'row': to[0], 'col': to[1]}
     payload['action'] = action
+
+    if msgs[0]:
+        payload['chatBefore'] = msgs[0]
+    if msgs[1]:
+        payload['chatAfter'] = msgs[1]
+
     payload = simplejson.dumps(payload)
 
     payload = urllib.quote(payload)
     channel = str(room.pk)
-    url = "%s/rest/publish?secret=%s&channel_name=%s&payload=%s" % (
+    url = "%s/rest/publish?secret=%s&channel_name=%s&user=%s&payload=%s" % (
         settings.HOOKBOX_URL,
         "altoids",
         channel,
+        username,
         payload)
     GET(url, async=True)
 
-def announce_move(room, from_, to):
+def announce_move(room, from_, to, username):
     payload = {'msgtype': 'move'}
     payload['from'] = {'row': from_[0], 'col': from_[1]}
     payload['to'] = {'row': to[0], 'col': to[1]}
@@ -165,10 +181,11 @@ def announce_move(room, from_, to):
     payload = simplejson.dumps(payload)
     payload = urllib.quote(payload)
     channel = str(room.pk)
-    url = "%s/rest/publish?secret=%s&channel_name=%s&payload=%s" % (
+    url = "%s/rest/publish?secret=%s&channel_name=%s&user=%s&payload=%s" % (
         settings.HOOKBOX_URL,
         "altoids",
         channel,
+        username,
         payload)
     GET(url, async=True)
 

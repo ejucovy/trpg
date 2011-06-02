@@ -24,7 +24,13 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
   var chatroom = new ChatWindow("#chat");
 
   function putInChatWindow(msg, type) {
-      chatroom.print(msg, type);
+      if( typeof msg == "object" ) {
+	  for( var i=0; i<msg.length; ++i ) {
+	      chatroom.print(msg[i], type);
+	  }
+      } else {
+	  chatroom.print(msg, type);
+      }
   };
 
   function sendChat(msg) {
@@ -95,7 +101,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
     }
   });
 
-  function animateAction(unit, cell, actionType) {
+  function animateAction(unit, cell, actionType, after) {
     if( actionType != "attack" ) return; // TODO
     var actor = $(unit).data("sprite");
     var target = $(cell).find("div.item").data("sprite");
@@ -104,6 +110,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
     window.setTimeout(function() {
 			actor.removeClass("attacking");
 			target.removeClass("hurting");
+			after && after();
 			$.post(game_room.room_url + "ready/");
 		      }, 2000);
   };
@@ -126,10 +133,10 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 	if( game_room.turn_type == "move" ) {
 	  var col = $(item).parent("td").index();
           var row = $(item).parent("td").parent("tr").index();
-	  minCol = Math.max(0, col-2);
-          maxCol = Math.min(9, col+2);
-          minRow = Math.max(0, row-2);
-          maxRow = Math.min(9, row+2);
+	  minCol = Math.max(0, col-5);
+          maxCol = Math.min(9, col+5);
+          minRow = Math.max(0, row-5);
+          maxRow = Math.min(9, row+5);
 
 	  filter = function() { return $(this).find("div.item").length == 0; };
           each = function() { return; };
@@ -279,13 +286,12 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 		frame.payload = JSON.parse(frame.payload);
             }
             var msgtype = frame.payload.msgtype;
+	    var type = frame.user == game_room.username ? window.team : game_room.otherteam;
 	    console && console.log(frame);
             if( msgtype == "turnchange" ) {
               turnChange(frame.payload);
 	    } else if( msgtype == "chat" ) {
-
 		var msg = frame.user + ": " + frame.payload.msg;
-		var type = frame.user == game_room.username ? window.team : game_room.otherteam;
 		putInChatWindow(msg, type);
             } else if( msgtype == "move" ) {
               var from = frame.payload.from;
@@ -300,7 +306,9 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
               var orig = $($("table#board tr")[from.row]).find("td")[from.col];
               var dest = $($("table#board tr")[to.row]).find("td")[to.col];
               var item = $(orig).find("div.item")[0];
-              animateAction(item, dest, frame.payload.action);
+	      putInChatWindow(frame.payload.chatBefore, type);
+              animateAction(item, dest, frame.payload.action,
+			    function() { putInChatWindow(frame.payload.chatAfter, type); });
 	    }
 
         };
