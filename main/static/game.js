@@ -19,7 +19,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 
   game_room.turn_type = null;
 
-  game_room.otherteam = window.team == "red" ? "blue" : "red";
+  game_room.otherteam = null;
 
   var chatroom = new ChatWindow("#chat");
 
@@ -261,8 +261,10 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
         window.subscription = subscription;
         if( subscription.presence.length == 1 ) {
           window.team = "blue";
+	  game_room.otherteam = "red";
         } else {
           window.team = "red";
+	  game_room.otherteam = "blue";
         }
         $.post(game_room.room_url + "ready/");
 
