@@ -13,6 +13,7 @@
     {% endif %}
 
     $(window).load(function() {    
+      $("form input").width($("#chat").width());
       var room = new GameRoom("{{room.get_absolute_url}}",
                               username, "{{room.pk}}",
                               "{{HOOKBOX_URL}}"
@@ -39,5 +40,8 @@
   <h3>Chat</h3>
   <pre id="chat" style="height: 4em; overflow-x: auto; overflow-y: scroll">
   </pre>
+  <form onsubmit="gameroom.chat(this); return false;">
+    <input type="text" />
+  </form>
 </body>
 </html>

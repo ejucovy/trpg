@@ -13,7 +13,11 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
       payload = JSON.stringify(payload);
       window.conn.publish(game_room.game_id, payload);
   }
-  game_room.chat = sendChat;
+  game_room.chat = function(form) { 
+      var msg = $(form).find("input").val();
+      $(form).find("input").val("");
+      sendChat(msg);
+  }
 
   function infoAbout(unit) {
     var data = {};
@@ -262,6 +266,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 		var msg = frame.payload.msg;
 		$("#chat").text($("#chat").text() + "\n" + 
 				frame.user + ": " + msg);
+		$("#chat").scrollTop($("#chat").height());
             } else if( msgtype == "move" ) {
               var from = frame.payload.from;
               var to = frame.payload.to;
