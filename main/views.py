@@ -155,6 +155,7 @@ def announce_action(room, action, from_, to,
     payload['from'] = {'row': from_[0], 'col': from_[1]}
     payload['to'] = {'row': to[0], 'col': to[1]}
     payload['action'] = action
+    payload['acting_user'] = username
 
     if msgs[0]:
         payload['chatBefore'] = msgs[0]
@@ -177,6 +178,7 @@ def announce_move(room, from_, to, username):
     payload = {'msgtype': 'move'}
     payload['from'] = {'row': from_[0], 'col': from_[1]}
     payload['to'] = {'row': to[0], 'col': to[1]}
+    payload['acting_user'] = username
 
     payload = simplejson.dumps(payload)
     payload = urllib.quote(payload)

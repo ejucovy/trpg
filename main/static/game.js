@@ -286,11 +286,11 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 		frame.payload = JSON.parse(frame.payload);
             }
             var msgtype = frame.payload.msgtype;
-	    var type = frame.user == game_room.username ? window.team : game_room.otherteam;
 	    console && console.log(frame);
             if( msgtype == "turnchange" ) {
               turnChange(frame.payload);
 	    } else if( msgtype == "chat" ) {
+		var type = frame.user == game_room.username ? window.team : game_room.otherteam;
 		var msg = frame.user + ": " + frame.payload.msg;
 		putInChatWindow(msg, type);
             } else if( msgtype == "move" ) {
@@ -306,6 +306,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
               var orig = $($("table#board tr")[from.row]).find("td")[from.col];
               var dest = $($("table#board tr")[to.row]).find("td")[to.col];
               var item = $(orig).find("div.item")[0];
+	      var type = frame.payload.acting_user == game_room.username ? window.team : game_room.otherteam;
 	      putInChatWindow(frame.payload.chatBefore, type);
               animateAction(item, dest, frame.payload.action,
 			    function() { putInChatWindow(frame.payload.chatAfter, type); });
