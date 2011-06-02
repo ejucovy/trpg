@@ -8,8 +8,10 @@ urlpatterns = patterns(
     # (r'^bagels/', include('bagels.foo.urls')),
     (r'^$', 'bagels.main.views.room_index'),
 
+    (r'^static/(?P<path>.+)/$', 'bagels.main.static_view.static_view'),
     (r'^connect$', 'bagels.main.hookbox.connect'),
     (r'^create_channel$', 'bagels.main.hookbox.create_channel'),
+    (r'^publish$', 'bagels.main.hookbox.publish'),
     (r'^subscribe$', 'bagels.main.hookbox.subscribe'),
     (r'^unsubscribe$', 'bagels.main.hookbox.unsubscribe'),
 

@@ -40,6 +40,19 @@ def unsubscribe(request):
 
 @csrf_exempt
 @json
+def publish(request):
+    name = request.COOKIES['user']
+    game = request.COOKIES['game']
+
+    room = GameRoom.objects.get(pk=game)
+    user = User.objects.get(username=name)
+
+    if user in room.players.all():
+        return [True, {}]
+    return [False, {}]
+
+@csrf_exempt
+@json
 def subscribe(request):
     name = request.COOKIES['user']
     game = request.COOKIES['game']
