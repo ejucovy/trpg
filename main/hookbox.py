@@ -35,7 +35,7 @@ def unsubscribe(request):
     room = GameRoom.objects.get(pk=game)
     user = User.objects.get(username=name)
 
-    room.ready.remove(user)
+    room.players.remove(user)
     return [True, {}]
 
 @csrf_exempt
