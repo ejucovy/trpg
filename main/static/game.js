@@ -133,10 +133,11 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 	if( game_room.turn_type == "move" ) {
 	  var col = $(item).parent("td").index();
           var row = $(item).parent("td").parent("tr").index();
-	  minCol = Math.max(0, col-5);
-          maxCol = Math.min(9, col+5);
-          minRow = Math.max(0, row-5);
-          maxRow = Math.min(9, row+5);
+	  var mp = $(item).data("move");
+	  minCol = Math.max(0, col-mp);
+          maxCol = Math.min(9, col+mp);
+          minRow = Math.max(0, row-mp);
+          maxRow = Math.min(9, row+mp);
 
 	  filter = function() { return $(this).find("div.item").length == 0; };
           each = function() { return; };
@@ -291,7 +292,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
               turnChange(frame.payload);
 	    } else if( msgtype == "chat" ) {
 		var type = frame.user == game_room.username ? window.team : game_room.otherteam;
-		var msg = frame.user + ": " + frame.payload.msg;
+		var msg = "<b>" + frame.user + "</b>: " + frame.payload.msg;
 		putInChatWindow(msg, type);
             } else if( msgtype == "move" ) {
               var from = frame.payload.from;

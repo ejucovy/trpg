@@ -19,15 +19,15 @@ def start_board():
     board.add_item(2, 5, Item(type='rock', height=3))
     board.add_item(5, 4, Item(type='rock', height=3))
 
-    board.add_item(9, 9, Item(type='unit', job='knight', team='red', health=10))
-    board.add_item(8, 9, Item(type='unit', job='winger', team='red', health=10))
-    board.add_item(7, 9, Item(type='unit', job='healer', team='red', health=10))
-    board.add_item(6, 9, Item(type='unit', job='wizard', team='red', health=10))
+    board.add_item(9, 9, Item(type='unit', job='knight', team='red', health=10, move=2))
+    board.add_item(8, 9, Item(type='unit', job='winger', team='red', health=10, move=4))
+    board.add_item(7, 9, Item(type='unit', job='healer', team='red', health=10, move=3))
+    board.add_item(6, 9, Item(type='unit', job='wizard', team='red', health=10, move=2))
 
-    board.add_item(0, 0, Item(type='unit', job='knight', team='blue', health=10))
-    board.add_item(1, 0, Item(type='unit', job='winger', team='blue', health=10))
-    board.add_item(2, 0, Item(type='unit', job='healer', team='blue', health=10))
-    board.add_item(3, 0, Item(type='unit', job='smallrus', team='blue', health=10))
+    board.add_item(0, 0, Item(type='unit', job='knight', team='blue', health=10, move=2))
+    board.add_item(1, 0, Item(type='unit', job='winger', team='blue', health=10, move=4))
+    board.add_item(2, 0, Item(type='unit', job='healer', team='blue', health=10, move=3))
+    board.add_item(3, 0, Item(type='unit', job='smallrus', team='blue', health=10, move=3))
     return board
 
 @rendered_with("main/game_board.html")
