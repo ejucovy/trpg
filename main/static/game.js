@@ -266,7 +266,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 		var msg = frame.payload.msg;
 		$("#chat").text($("#chat").text() + "\n" + 
 				frame.user + ": " + msg);
-		$("#chat").scrollTop($("#chat").height());
+		$("#chat").scrollTop(900000);
             } else if( msgtype == "move" ) {
               var from = frame.payload.from;
               var to = frame.payload.to;
