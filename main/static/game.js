@@ -1,9 +1,11 @@
 var ChatWindow = function(sel) {
     var chat = this;
-    
+
     chat.print = function(msg, type) {
-	$(sel).text($(sel).text() + "\n" + msg);
-	$(sel).scrollTop(900000);
+	var inner = $($(sel).children("div")[0]);
+	msg = $("<div />").css("color", type).text(msg);
+	inner.append(msg);
+	$(sel).scrollTop(inner.height());
     };
 };
 
@@ -17,10 +19,12 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 
   game_room.turn_type = null;
 
+  game_room.otherteam = window.team == "red" ? "blue" : "red";
+
   var chatroom = new ChatWindow("#chat");
 
-  function putInChatWindow(msg) {
-      chatroom.print(msg);
+  function putInChatWindow(msg, type) {
+      chatroom.print(msg, type);
   };
 
   function sendChat(msg) {
@@ -130,7 +134,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 	  filter = function() { return $(this).find("div.item").length == 0; };
           each = function() { return; };
 	  putInChatWindow("Now click on a square to move to; " +
-			  "or click on a different unit to move.");
+			  "or click on a different unit to move.", "black");
 	} else if( game_room.turn_type == "act" ) {
 	  var col = $(item).parent("td").index();
           var row = $(item).parent("td").parent("tr").index();
@@ -148,7 +152,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 	  };
           each = function() { $(this).find("div.item").data("sprite").addClass("availabletarget"); };
 	  putInChatWindow("Now click on a square to attack; " +
-			  "or click on a different unit to act.");
+			  "or click on a different unit to act.", "black");
 	}
 
         $("table#board tr").slice(minRow, maxRow+1).each(function() {
@@ -159,14 +163,14 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 
   function hisTurn(team, type) {
       putInChatWindow("It is now " + team + "'s turn to "
-		      + type + ". Please be patient.");
+		      + type + ". Please be patient.", "black");
       game_room.turn_type = null;
   };
   function myTurn(team, type) {
     if( type == "move") {
-	putInChatWindow("It is now your turn! Click on a unit to move it.");
+	putInChatWindow("It is now your turn! Click on a unit to move it.", "black");
     } else if( type == "act" ) {
-	putInChatWindow("It is now your turn! Click on a unit to act.");
+	putInChatWindow("It is now your turn! Click on a unit to act.", "black");
     }
     game_room.turn_type = type;
     var sel = "div.sprite[data-team=" + window.team + "]";
@@ -279,7 +283,8 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 	    } else if( msgtype == "chat" ) {
 
 		var msg = frame.user + ": " + frame.payload.msg;
-		putInChatWindow(msg);
+		var type = frame.user == game_room.username ? window.team : game_room.otherteam;
+		putInChatWindow(msg, type);
             } else if( msgtype == "move" ) {
               var from = frame.payload.from;
               var to = frame.payload.to;
