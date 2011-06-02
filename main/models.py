@@ -36,6 +36,10 @@ class Board(object):
     def size(self):
         return (10, 10)
 
+    def in_range(self, x, y):
+        return x > -1 and x < self.size()[0] \
+            and y > -1 and y < self.size()[1]
+
     def adjacent_units(self, x, y, team):
         units = []
         for _x in (x-1, x, x+1):

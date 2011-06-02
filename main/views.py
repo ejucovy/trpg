@@ -78,12 +78,26 @@ def room_ready(request, room_id):
                         type = "act"
                         this_team = team
 
+        extra_data = {}
+        if type == "move":
+            board = room.load_board()
+            available_moves = {}
+            for coords in board.units(this_team):
+                unit = board.get_item(*coords)
+                mp = int(unit.data["move"])
+                for x in range(coords[0]-mp, coords[0]+mp+1):
+                    for y in range(coords[1]-mp, coords[1]+mp+1):
+                        if board.in_range(x, y) and not board.has_item(x, y):
+                            available_moves.setdefault("[%d, %d]" % coords, []).append((x, y))
+            extra_data['available_moves'] = available_moves
+
         room.ready.clear()
 
         room.status = "%s: %s" % (type, this_team)
         room.save()
 
-        announce_turn(room, this_team, type)
+        announce_turn(room, this_team, type, extra_data)
+
     return HttpResponse("ok")
 
 @csrf_exempt
@@ -191,12 +205,15 @@ def announce_move(room, from_, to, username):
         payload)
     GET(url, async=True)
 
-def announce_turn(room, team, type):
+def announce_turn(room, team, type, extra_data={}):
     payload = {'msgtype': "turnchange",
                'turntype': type,
                'team': team}
 
     payload['board'] = room.board.encode("ascii")
+    for item in extra_data:
+        payload[item] = extra_data[item]
+
     payload = simplejson.dumps(payload)
     payload = urllib.quote(payload)
 

@@ -74,7 +74,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
       window.unit = null;
       $("#board td.available").removeClass("available");
       $(".ready").removeClass("ready");
-
+      $(".item").removeData("availableMoves");
       $.post(game_room.room_url + "move/",
 	{team: window.team,
 	 c0: fromCol, c1: col, r0: fromRow, r1: row});
@@ -131,18 +131,14 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 	var minCol; var maxCol; var minRow; var maxRow;
 	var filter; var each;
 	if( game_room.turn_type == "move" ) {
-	  var col = $(item).parent("td").index();
-          var row = $(item).parent("td").parent("tr").index();
-	  var mp = $(item).data("move");
-	  minCol = Math.max(0, col-mp);
-          maxCol = Math.min(9, col+mp);
-          minRow = Math.max(0, row-mp);
-          maxRow = Math.min(9, row+mp);
-
-	  filter = function() { return $(this).find("div.item").length == 0; };
-          each = function() { return; };
-	  putInChatWindow("Now click on a square to move to; " +
-			  "or click on a different unit to move.", "black");
+	    var moves = item.data("availableMoves");
+	    for( var i=0; i<moves.length; ++i ) {
+		var coor = moves[i];
+		$($($("#board tr")[coor[0]]).children("td")[coor[1]])
+		    .addClass("available");
+	    }
+	    putInChatWindow("Now click on a square to move to; " +
+			    "or click on a different unit to move.", "black");
 	} else if( game_room.turn_type == "act" ) {
 	  var col = $(item).parent("td").index();
           var row = $(item).parent("td").parent("tr").index();
@@ -161,12 +157,11 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
           each = function() { $(this).find("div.item").data("sprite").addClass("availabletarget"); };
 	  putInChatWindow("Now click on a square to attack; " +
 			  "or click on a different unit to act.", "black");
+	  $("table#board tr").slice(minRow, maxRow+1).each(function() {
+		  $(this).find("td").slice(minCol, maxCol+1)
+		      .filter(filter).addClass("available").each(each);
+	      });
 	}
-
-        $("table#board tr").slice(minRow, maxRow+1).each(function() {
-          $(this).find("td").slice(minCol, maxCol+1)
-	    .filter(filter).addClass("available").each(each);
-	});
       });
 
   function hisTurn(team, type) {
@@ -174,15 +169,24 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 		      + type + ". Please be patient.", "black");
       game_room.turn_type = null;
   };
-  function myTurn(team, type) {
+  function myTurn(team, type, availableMoves) {
     if( type == "move") {
 	putInChatWindow("It is now your turn! Click on a unit to move it.", "black");
+	for( var coords in availableMoves ) {
+	    foo = coords;
+	    var x = eval(coords)[0]; var y = eval(coords)[1];
+	    tr = $("#board tr")[x];
+	    td = $(tr).find("td")[y];
+	    console.log(x, y, tr, td);
+	    $(td).children("div.item").data("sprite").addClass("ready");
+	    $(td).children("div.item").data("availableMoves", availableMoves[coords]);
+	}
     } else if( type == "act" ) {
 	putInChatWindow("It is now your turn! Click on a unit to act.", "black");
+	var sel = "div.sprite[data-team=" + window.team + "]";
+	$(sel).addClass("ready");
     }
     game_room.turn_type = type;
-    var sel = "div.sprite[data-team=" + window.team + "]";
-    $(sel).addClass("ready");
   };
 
       function get_cookie(cookie_name) {
@@ -242,7 +246,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
         reloadBoard(board);
 	var type = payload.turntype;
         if( window.team == team ) {
-          myTurn(team, type);
+	    myTurn(team, type, payload.available_moves);
         } else {
           hisTurn(team, type);
         }
@@ -283,11 +287,11 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 //        };
 
         subscription.onPublish = function(frame) {
+	    console && console.log(frame);
 	    if( typeof frame.payload == "string" ) {
 		frame.payload = JSON.parse(frame.payload);
             }
             var msgtype = frame.payload.msgtype;
-	    console && console.log(frame);
             if( msgtype == "turnchange" ) {
               turnChange(frame.payload);
 	    } else if( msgtype == "chat" ) {
