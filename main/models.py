@@ -7,6 +7,7 @@ class GameRoom(models.Model):
     board = models.TextField()
     ready = models.ManyToManyField(User, related_name='active_rooms')
     status = models.TextField()
+    board_type = models.TextField()
 
     @models.permalink
     def get_absolute_url(self):
@@ -19,8 +20,19 @@ class GameRoom(models.Model):
     def num_players(self):
         return self.players.count()
 
+    @property
+    def BoardClass(self):
+        if self.board_type == "checkers":
+            return CheckersBoard
+        return Board
+
+    def start_board(self):
+        board = self.BoardClass()
+        board.start_board()
+        return board
+
     def load_board(self):
-        return Board.load(self.board.encode("ascii"))
+        return self.BoardClass.load(self.board.encode("ascii"))
 
     def save_board(self, board):
         self.board = board.dump()
@@ -28,6 +40,59 @@ class GameRoom(models.Model):
 class Item(object):
     def __init__(self, **kw):
         self.data = kw
+
+class CheckersBoard(object):
+    def __init__(self):
+        self.grid = {}
+
+    def size(self):
+        return (20, 20)
+
+    def start_board(self):
+        self.add_item(0, 0, Item(type="pawn", team="red"))
+        self.add_item(0, 2, Item(type="pawn", team="red"))
+        self.add_item(0, 4, Item(type="pawn", team="red"))
+        self.add_item(0, 6, Item(type="pawn", team="red"))
+        self.add_item(0, 8, Item(type="pawn", team="red"))
+        
+        self.add_item(19, 1, Item(type="pawn", team="blue"))
+        self.add_item(19, 3, Item(type="pawn", team="blue"))
+        self.add_item(19, 5, Item(type="pawn", team="blue"))
+        self.add_item(19, 7, Item(type="pawn", team="blue"))
+        self.add_item(19, 9, Item(type="pawn", team="blue"))
+        
+
+        
+    def get_item(self, x, y):
+        return self.grid[(x, y)]
+
+    def has_item(self, x, y):
+        return (x, y) in self.grid
+        
+    def add_item(self, x, y, item):
+        self.grid[(x, y)] = item
+
+    def pop_item(self, x, y):
+        item = self.grid[(x, y)]
+        del self.grid[(x, y)]
+        return item
+
+    @classmethod
+    def load(cls, json):
+        data = simplejson.loads(json)
+        board = cls()
+        for coord in data:
+            x, y = eval(coord)
+            item = Item(**data[coord])
+            board.add_item(x, y, item)
+        return board
+
+    def dump(self):
+        data = {}
+        for (x, y) in self.grid:
+            item = self.grid[(x, y)]
+            data['(%s, %s)' % (x, y)] = item.data
+        return simplejson.dumps(data)
 
 class Board(object):
     def __init__(self):
@@ -40,6 +105,60 @@ class Board(object):
         return x > -1 and x < self.size()[0] \
             and y > -1 and y < self.size()[1]
 
+    def next_turn(self, status):
+        """
+        Return (team, status, available_moves)
+        """
+        type = "move"
+        if not status:
+            this_team = "blue"
+        else:
+            if "blue" in status:
+                team = "blue"
+                next_team = "red"
+            else:
+                team = "red"
+                next_team = "blue"
+            this_team = next_team
+        
+            if "act" not in status:
+                for coords in self.units(team):
+                    if self.adjacent_units(coords[0], coords[1], next_team):
+                        type = "act"
+                        this_team = team
+
+        available_moves = {}
+        if type == "move":
+            for coords in self.units(this_team):
+                unit = self.get_item(*coords)
+                mp = int(unit.data["move"])
+                for x in range(coords[0]-mp, coords[0]+mp+1):
+                    for y in range(coords[1]-mp, coords[1]+mp+1):
+                        if self.in_range(x, y) and not self.has_item(x, y):
+                            available_moves.setdefault("[%d, %d]" % coords, []).append((x, y))
+
+        status = "%s: %s" % (type, this_team)
+        return (this_team, status, available_moves)
+        
+
+    def start_board(self):
+        board = self
+        board.add_item(1, 1, Item(type='rock', height=3))
+        board.add_item(2, 2, Item(type='rock', height=3))
+        board.add_item(4, 4, Item(type='rock', height=3))
+        board.add_item(2, 5, Item(type='rock', height=3))
+        board.add_item(5, 4, Item(type='rock', height=3))
+        
+        board.add_item(9, 9, Item(type='unit', job='knight', team='red', health=10, move=2))
+        board.add_item(8, 9, Item(type='unit', job='winger', team='red', health=10, move=4))
+        board.add_item(7, 9, Item(type='unit', job='healer', team='red', health=10, move=3))
+        board.add_item(6, 9, Item(type='unit', job='wizard', team='red', health=10, move=2))
+        
+        board.add_item(0, 0, Item(type='unit', job='knight', team='blue', health=10, move=2))
+        board.add_item(1, 0, Item(type='unit', job='winger', team='blue', health=10, move=4))
+        board.add_item(2, 0, Item(type='unit', job='healer', team='blue', health=10, move=3))
+        board.add_item(3, 0, Item(type='unit', job='smallrus', team='blue', health=10, move=3))
+        
     def adjacent_units(self, x, y, team):
         units = []
         for _x in (x-1, x, x+1):

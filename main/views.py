@@ -11,25 +11,6 @@ from django.conf import settings
 from django.utils import simplejson
 from bagels.main import i18n
 
-def start_board():
-    board = Board()
-    board.add_item(1, 1, Item(type='rock', height=3))
-    board.add_item(2, 2, Item(type='rock', height=3))
-    board.add_item(4, 4, Item(type='rock', height=3))
-    board.add_item(2, 5, Item(type='rock', height=3))
-    board.add_item(5, 4, Item(type='rock', height=3))
-
-    board.add_item(9, 9, Item(type='unit', job='knight', team='red', health=10, move=2))
-    board.add_item(8, 9, Item(type='unit', job='winger', team='red', health=10, move=4))
-    board.add_item(7, 9, Item(type='unit', job='healer', team='red', health=10, move=3))
-    board.add_item(6, 9, Item(type='unit', job='wizard', team='red', health=10, move=2))
-
-    board.add_item(0, 0, Item(type='unit', job='knight', team='blue', health=10, move=2))
-    board.add_item(1, 0, Item(type='unit', job='winger', team='blue', health=10, move=4))
-    board.add_item(2, 0, Item(type='unit', job='healer', team='blue', health=10, move=3))
-    board.add_item(3, 0, Item(type='unit', job='smallrus', team='blue', health=10, move=3))
-    return board
-
 @rendered_with("main/game_board.html")
 @allow_http("GET")
 def room(request, room_id):
@@ -59,44 +40,16 @@ def room_ready(request, room_id):
     room.ready.add(user)
 
     if room.ready.count() == 2:
-        type = "move"
-        if not room.status:
-            this_team = "blue"
-        else:
-            if "blue" in room.status:
-                team = "blue"
-                next_team = "red"
-            else:
-                team = "red"
-                next_team = "blue"
-            this_team = next_team
-        
-            if "act" not in room.status:
-                board = room.load_board()
-                for coords in board.units(team):
-                    if board.adjacent_units(coords[0], coords[1], next_team):
-                        type = "act"
-                        this_team = team
-
-        extra_data = {}
-        if type == "move":
-            board = room.load_board()
-            available_moves = {}
-            for coords in board.units(this_team):
-                unit = board.get_item(*coords)
-                mp = int(unit.data["move"])
-                for x in range(coords[0]-mp, coords[0]+mp+1):
-                    for y in range(coords[1]-mp, coords[1]+mp+1):
-                        if board.in_range(x, y) and not board.has_item(x, y):
-                            available_moves.setdefault("[%d, %d]" % coords, []).append((x, y))
-            extra_data['available_moves'] = available_moves
+        board = room.load_board()
+        team, status, available_moves = board.next_turn(room.status)
 
         room.ready.clear()
 
-        room.status = "%s: %s" % (type, this_team)
+        room.status = status
         room.save()
 
-        announce_turn(room, this_team, type, extra_data)
+        extra_data = dict(available_moves=available_moves)
+        announce_turn(room, team, type, extra_data)
 
     return HttpResponse("ok")
 
@@ -227,8 +180,8 @@ def announce_turn(room, team, type, extra_data={}):
 
 @allow_http("POST")
 def create_room(request):
-    room = GameRoom()
-    board = start_board()
+    room = GameRoom(board_type="checkers")
+    board = room.start_board()
     room.save_board(board)
     room.save()
     return redirect(room.get_absolute_url())

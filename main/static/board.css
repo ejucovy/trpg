@@ -16,6 +16,13 @@
       position: absolute;
     }
 
+    div.sprite[data-team="red"][data-type="pawn"] {
+      background-image: url(/static/images/checkers/red.png);
+    }
+    div.sprite[data-team="blue"][data-type="pawn"] {
+      background-image: url(/static/images/checkers/black.png);
+    }
+
     div.sprite[data-type="rock"] {
       background-image: url(/static/images/rock.jpg);
     }
