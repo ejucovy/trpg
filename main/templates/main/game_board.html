@@ -5,6 +5,7 @@
   <script type="text/javascript" src="/static/jquery-ui.min.js"></script>
   <script type="text/javascript" src="{{HOOKBOX_URL}}/static/hookbox.js"></script>
   <script type="text/javascript" src="/static/game.js"></script>
+  {{game_specific_head|safe}}
   <script type="text/javascript">
     {% if request.user.is_authenticted %}
     var username = "{{request.user.username}}";
@@ -13,8 +14,6 @@
     {% endif %}
 
     $(window).load(function() {
-      $("tr:even td:even, tr:odd td:odd").css("background-color", "pink");
-      $("tr:even td:odd, tr:odd td:even").css("background-color", "lightblue");
       $("form input").width($("#chat").width());
       var room = new GameRoom("{{room.get_absolute_url}}",
                               username, "{{room.pk}}",

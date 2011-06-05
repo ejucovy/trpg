@@ -45,6 +45,14 @@ class CheckersBoard(object):
     def __init__(self):
         self.grid = {}
 
+    def game_specific_head(self):
+        return """
+    $(window).load(function() {
+      $("tr:even td:even, tr:odd td:odd").css("background-color", "pink");
+      $("tr:even td:odd, tr:odd td:even").css("background-color", "lightblue");
+    };
+"""
+
     def size(self):
         return (8, 8)
 
@@ -136,6 +144,13 @@ class CheckersBoard(object):
 class Board(object):
     def __init__(self):
         self.grid = {}
+
+    def game_specific_head(self):
+        return """
+    $(window).load(function() {
+      $("td").css("background-image", "url(/static/images/grass.jpg)");
+    };
+"""
 
     def size(self):
         return (10, 10)

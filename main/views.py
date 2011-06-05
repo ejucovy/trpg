@@ -22,6 +22,7 @@ def room(request, room_id):
         'room': room, 'board': board,
         'rows': rows,
         'cols': cols,
+        'game_specific_head': board.game_specific_head(),
         }
 
 @allow_http("GET")
