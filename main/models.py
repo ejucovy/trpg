@@ -46,23 +46,37 @@ class CheckersBoard(object):
         self.grid = {}
 
     def size(self):
-        return (20, 20)
+        return (8, 8)
 
     def start_board(self):
-        self.add_item(0, 0, Item(type="pawn", team="red"))
-        self.add_item(0, 2, Item(type="pawn", team="red"))
-        self.add_item(0, 4, Item(type="pawn", team="red"))
-        self.add_item(0, 6, Item(type="pawn", team="red"))
-        self.add_item(0, 8, Item(type="pawn", team="red"))
-        
-        self.add_item(19, 1, Item(type="pawn", team="blue"))
-        self.add_item(19, 3, Item(type="pawn", team="blue"))
-        self.add_item(19, 5, Item(type="pawn", team="blue"))
-        self.add_item(19, 7, Item(type="pawn", team="blue"))
-        self.add_item(19, 9, Item(type="pawn", team="blue"))
-        
+        for j in range(0, 3):
+            for i in range(j % 2, 8, 2):
+                self.add_item(j, i, Item(type="pawn", team="red"))
+        for j in range(5, 8):
+            for i in range(j % 2, 8, 2):
+                self.add_item(j, i, Item(type="pawn", team="blue"))
 
-        
+    def next_turn(self, status):
+        if "red" in status:
+            team = "blue"
+            direction = -1
+        else:
+            team = "red"
+            direction = 1
+        status = "%s: move" % team
+        available_moves = {}
+        for coords, item in self.grid.items():
+            if item.data.get("team") != team:
+                continue
+            available_moves.setdefault("[%d, %d]" % coords, [])
+            possibilities = [(coords[0]+direction, coords[1]-1),
+                             (coords[0]+direction, coords[1]+1)]
+            for _coords in possibilities:
+                if _coords in self.grid:
+                    continue
+                available_moves["[%d, %d]" % coords].append(_coords)
+        return (team, status, "move", available_moves)
+
     def get_item(self, x, y):
         return self.grid[(x, y)]
 
@@ -138,7 +152,7 @@ class Board(object):
                             available_moves.setdefault("[%d, %d]" % coords, []).append((x, y))
 
         status = "%s: %s" % (type, this_team)
-        return (this_team, status, available_moves)
+        return (this_team, status, type, available_moves)
         
 
     def start_board(self):

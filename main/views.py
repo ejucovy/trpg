@@ -41,7 +41,7 @@ def room_ready(request, room_id):
 
     if room.ready.count() == 2:
         board = room.load_board()
-        team, status, available_moves = board.next_turn(room.status)
+        team, status, type, available_moves = board.next_turn(room.status)
 
         room.ready.clear()
 

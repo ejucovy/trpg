@@ -1,6 +1,9 @@
     td {
-      background-image: url(/static/images/grass.jpg);
       height: 64; width: 64;
+    }
+
+    td.grass {
+      background-image: url(/static/images/grass.jpg);
     }
     table {
       border-spacing: 0;

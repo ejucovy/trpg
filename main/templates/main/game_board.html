@@ -12,7 +12,9 @@
     var username = prompt("What is your name?");
     {% endif %}
 
-    $(window).load(function() {    
+    $(window).load(function() {
+      $("tr:even td:even, tr:odd td:odd").css("background-color", "pink");
+      $("tr:even td:odd, tr:odd td:even").css("background-color", "lightblue");
       $("form input").width($("#chat").width());
       var room = new GameRoom("{{room.get_absolute_url}}",
                               username, "{{room.pk}}",
