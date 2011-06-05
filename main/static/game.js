@@ -2,6 +2,7 @@ var ChatWindow = function(sel) {
     var chat = this;
 
     chat.print = function(msg, type) {
+	type = type | "black";
 	var inner = $($(sel).children("div")[0]);
 	msg = $("<div />").css("color", type).text(msg);
 	inner.append(msg);
@@ -278,13 +279,12 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
           window.team = "red";
 	  game_room.otherteam = "blue";
         }
+	putInChatWindow("You have joined the game room as the " + window.team + " team.");
         $.post(game_room.room_url + "ready/");
 
-//        subscription.onSubscribe = function(frame) {
-//          if( subscription.presence.length == 2 ) {
-//            window.team = "blue";
-//          }
-//        };
+        subscription.onSubscribe = function(frame) {
+	    putInChatWindow(frame.user + " has joined the game room as the " + game_room.otherteam + " team.");
+        };
 
         subscription.onPublish = function(frame) {
 	    console && console.log(frame);
