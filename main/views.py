@@ -190,7 +190,7 @@ def announce_turn(room, team, type, extra_data={}):
 
 @allow_http("POST")
 def create_room(request):
-    room = GameRoom(board_type="checkers")
+    room = GameRoom(board_type=request.POST['gametype'])
     board = room.start_board()
     room.save_board(board)
     room.save()

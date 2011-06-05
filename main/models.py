@@ -47,10 +47,12 @@ class CheckersBoard(object):
 
     def game_specific_head(self):
         return """
+<script type="text/javascript">
     $(window).load(function() {
       $("tr:even td:even, tr:odd td:odd").css("background-color", "pink");
       $("tr:even td:odd, tr:odd td:even").css("background-color", "lightblue");
-    };
+    });
+</script>
 """
 
     def size(self):
@@ -147,9 +149,11 @@ class Board(object):
 
     def game_specific_head(self):
         return """
+<script type="text/javascript">
     $(window).load(function() {
       $("td").css("background-image", "url(/static/images/grass.jpg)");
-    };
+    });
+</script>
 """
 
     def size(self):

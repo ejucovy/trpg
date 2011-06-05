@@ -1,6 +1,10 @@
 <h1>Or create a new game room</h1>
 <form method="POST">
   {% csrf_token %}
+  <select name="gametype">
+    <option value="trpg">Tactical RPG</option>
+    <option value="checkers">Checkers</option>
+  </select>
   <input type="submit" />
 </form>
 <h1>Choose a game room to join</h1>
