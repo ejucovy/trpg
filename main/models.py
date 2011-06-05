@@ -58,23 +58,48 @@ class CheckersBoard(object):
 
     def next_turn(self, status):
         if "red" in status:
-            team = "blue"
-            direction = -1
+            if "jump" in status:
+                team = "red"
+                direction = 1
+                jumper = eval(status.split(":")[-1])
+                movable_coords = [jumper]
+            else:
+                team = "blue"
+                direction = -1
+                movable_coords = self.grid.keys()
         else:
-            team = "red"
-            direction = 1
+            if "jump" in status:
+                team = "blue"
+                direction = -1
+                jumper = eval(status.split(":")[-1])
+                movable_coords = [jumper]
+            else:
+                team = "red"
+                direction = 1
+                movable_coords = self.grid.keys()
+        
         status = "%s: move" % team
         available_moves = {}
-        for coords, item in self.grid.items():
+        for coords in movable_coords:
+            item = self.grid[coords]
             if item.data.get("team") != team:
                 continue
             available_moves.setdefault("[%d, %d]" % coords, [])
-            possibilities = [(coords[0]+direction, coords[1]-1),
-                             (coords[0]+direction, coords[1]+1)]
-            for _coords in possibilities:
-                if _coords in self.grid:
+            for i in (-1, 1):
+                possibility = (coords[0] + direction, coords[1] + i)
+                if possibility in self.grid:
+                    if self.grid[possibility].data.get("team") == team:
+                        continue
+                    beyond = (possibility[0] + direction, possibility[1] + i)
+                    if beyond in self.grid:
+                        continue
+                    available_moves["[%d, %d]" % coords].append(beyond)
                     continue
-                available_moves["[%d, %d]" % coords].append(_coords)
+                available_moves["[%d, %d]" % coords].append(possibility)
+        if not sum(True for i in available_moves.values() if i):
+            # if no available moves, switch to other team
+            return self.next_turn(status)
+
         return (team, status, "move", available_moves)
 
     def get_item(self, x, y):

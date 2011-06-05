@@ -70,6 +70,15 @@ def room_move(request, room_id):
     col1 = int(request.POST['c1'])
 
     board.add_item(row1, col1, item)
+
+    # @@todo checkers logic
+    if abs(row1-row) == 2 and abs(col1-col) == 2:
+        team, action = room.status.split(":")
+        room.status = "%s: jump:(%s, %s)" % (team, row1, col1)
+        rr = row - (row-row1) / 2
+        cc = col - (col-col1) / 2
+        board.pop_item(rr, cc)
+
     room.save_board(board)
     room.save()
 
