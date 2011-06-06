@@ -199,17 +199,19 @@ class Board(object):
         """
         Return (team, status, available_moves)
         """
-        type = "move"
+        if "act" in status:
+            type = "act"
+        else:
+            type = "move"
         if not status:
             this_team = "blue"
         else:
             if "blue" in status:
-                team = "blue"
+                this_team = "blue"
                 next_team = "red"
             else:
-                team = "red"
+                this_team = "red"
                 next_team = "blue"
-            this_team = next_team
         
         available_actions = {}
         if type == "move":
@@ -224,7 +226,7 @@ class Board(object):
             available_actions['move'] = available_moves
         elif type == "act":
             available_attack = {}
-            for coords in self.unit(this_team):
+            for coords in self.units(this_team):
                 enemies = self.adjacent_units(coords[0], coords[1], next_team)
                 for enemy in enemies:
                     available_attack.setdefault(

@@ -139,8 +139,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 	  putInChatWindow("Now click on a square to move to; " +
 			  "or click on a different unit to move.");
 	} else if( game_room.turn_type == "act" ) {
-	  var actions = item.data("availableAttacks");
-	  var attack = actions.attack;
+	  var attack = item.data("availableAttacks");
 	  for( var i=0; i<attack.length; ++i ) {
 	    var coor = attack[i];
 	    $($($("#board tr")[coor[0]]).children("td")[coor[1]])

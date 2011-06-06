@@ -86,6 +86,8 @@ def room_move(request, room_id):
 
     room.status = board.next_status(room.status)
 
+    print room.status
+
     room.ready.clear()
     room.save()
 
