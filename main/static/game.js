@@ -43,7 +43,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
       var msg = $(form).find("input").val();
       $(form).find("input").val("");
       sendChat(msg);
-  }
+  };
 
   function infoAbout(unit) {
     var data = {};
@@ -289,6 +289,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 	};
         subscription.onPublish = function(frame) {
 	    console && console.log(frame);
+	  if( frame.channel_name != game_room.game_id ) return;
 	    if( typeof frame.payload == "string" ) {
 		frame.payload = JSON.parse(frame.payload);
             }
