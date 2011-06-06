@@ -1,13 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import simplejson
+from django.contrib.admin import site
 
 class GameRoom(models.Model):
     players = models.ManyToManyField(User)
     board = models.TextField()
-    ready = models.ManyToManyField(User, related_name='active_rooms')
+    ready = models.ManyToManyField(User, related_name='ready_rooms')
     status = models.TextField()
     board_type = models.TextField()
+    present = models.ManyToManyField(User, related_name='present_rooms')
 
     @models.permalink
     def get_absolute_url(self):
@@ -36,6 +38,13 @@ class GameRoom(models.Model):
 
     def save_board(self, board):
         self.board = board.dump()
+
+class UserTeam(models.Model):
+    user = models.ForeignKey(User)
+    game = models.ForeignKey(GameRoom)
+    team = models.TextField()
+
+site.register(GameRoom)
 
 class Item(object):
     def __init__(self, **kw):

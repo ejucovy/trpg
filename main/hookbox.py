@@ -29,13 +29,13 @@ def create_channel(request):
 @csrf_exempt
 @json
 def unsubscribe(request):
-    name = request.COOKIES['user']
-    game = request.COOKIES['game']
+    name = request.POST['user']
+    game = request.POST['channel_name']
 
     room = GameRoom.objects.get(pk=game)
     user = User.objects.get(username=name)
 
-    room.players.remove(user)
+    room.present.remove(user)
     return [True, {}]
 
 @csrf_exempt
@@ -58,7 +58,7 @@ def subscribe(request):
     game = request.COOKIES['game']
 
     room = GameRoom.objects.get(pk=game)
-    if room.num_players() > 1:
+    if room.present.count() > 1:
         return [False, {}]
 
     try:
@@ -70,6 +70,15 @@ def subscribe(request):
                     )
         form = UserCreationForm(data)
         user = form.save()
-    
+
+    if user in room.players.all():
+        room.present.add(user)
+        return [True, {}]
+
+    if room.players.count() > 2:
+        return [False, {}]
+
     room.players.add(user)
+    room.present.add(user)
     return [True, {}]
+
