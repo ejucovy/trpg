@@ -50,10 +50,7 @@ def room_ready(request, room_id):
     room.ready.add(user)
     if room.ready.count() == 2:
         board = room.load_board()
-        team, status, type, available_moves = board.next_turn(room.status)
-
-        room.status = status
-        room.save()
+        team, status, type, available_moves = board.describe_turn(room.status)
 
         extra_data = dict(available_moves=available_moves)
         announce_turn(room, team, type, extra_data)
@@ -78,8 +75,7 @@ def room_move(request, room_id):
 
     board.add_item(row1, col1, item)
 
-    # @@todo checkers logic
-    if abs(row1-row) == 2 and abs(col1-col) == 2:
+    if room.board_type == "checkers" and abs(row1-row) == 2 and abs(col1-col) == 2:
         team, action = room.status.split(":")
         room.status = "%s: jump:(%s, %s)" % (team, row1, col1)
         rr = row - (row-row1) / 2
@@ -87,6 +83,10 @@ def room_move(request, room_id):
         board.pop_item(rr, cc)
 
     room.save_board(board)
+
+    team, status, type, moves = board.describe_turn(room.status)
+    room.status = status
+
     room.ready.clear()
     room.save()
 

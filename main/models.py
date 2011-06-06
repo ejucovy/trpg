@@ -75,7 +75,7 @@ class CheckersBoard(object):
             for i in range(j % 2, 8, 2):
                 self.add_item(j, i, Item(type="pawn", team="blue"))
 
-    def next_turn(self, status):
+    def describe_turn(self, status):
         if "red" in status:
             if "jump" in status:
                 team = "red"
@@ -117,7 +117,7 @@ class CheckersBoard(object):
                 available_moves["[%d, %d]" % coords].append(possibility)
         if not sum(True for i in available_moves.values() if i):
             # if no available moves, switch to other team
-            return self.next_turn(status)
+            return self.describe_turn(status)
 
         return (team, status, "move", available_moves)
 
@@ -172,7 +172,7 @@ class Board(object):
         return x > -1 and x < self.size()[0] \
             and y > -1 and y < self.size()[1]
 
-    def next_turn(self, status):
+    def describe_turn(self, status):
         """
         Return (team, status, available_moves)
         """
