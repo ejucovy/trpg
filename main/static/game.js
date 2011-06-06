@@ -39,7 +39,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
       payload = JSON.stringify(payload);
       window.conn.publish(game_room.game_id, payload);
   }
-  game_room.chat = function(form) { 
+  game_room.chat = function(form) {
       var msg = $(form).find("input").val();
       $(form).find("input").val("");
       sendChat(msg);
@@ -236,7 +236,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
       };
 
   game_room.repositionSprites = function() {
-      $(".sprite").each(function() { 
+      $(".sprite").each(function() {
 	      $(this).position({"my": "center", "at": "center", "of": $(this).data("item")});
 	  });
   };
@@ -272,17 +272,19 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
       window.conn = hookbox.connect(game_room.hookbox_url);
       window.conn.onSubscribed = function(channelName, subscription) {
         window.subscription = subscription;
-        if( subscription.presence.length == 1 ) {
-          window.team = "blue";
-	  game_room.otherteam = "red";
-        } else {
-          window.team = "red";
-	  game_room.otherteam = "blue";
-        }
+        $.ajax({
+		 url: game_room.room_url + 'team/' + game_room.username + '/',
+		 success: function(data) {
+		   window.team = data;
+		   game_room.otherteam = data == "blue" ? "red" : "blue";
+		 },
+		 async: false
+	       });
 	putInChatWindow("You have joined the game room as the " + window.team + " team.");
         $.post(game_room.room_url + "ready/");
 
         subscription.onSubscribe = function(frame) {
+          console.log(frame);
 	    putInChatWindow(frame.user + " has joined the game room as the " + game_room.otherteam + " team.");
         };
 

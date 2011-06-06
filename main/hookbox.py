@@ -2,7 +2,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect as redirect, HttpResponse
 from django.shortcuts import get_object_or_404
 from djangohelpers.lib import rendered_with, allow_http
-from bagels.main.models import GameRoom, Board, Item
+from bagels.main.models import GameRoom, Board, Item, UserTeam
 from django.utils import simplejson
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
@@ -80,5 +80,11 @@ def subscribe(request):
 
     room.players.add(user)
     room.present.add(user)
+    team = UserTeam(user=user, game=room)
+    if UserTeam.objects.filter(game=room).count() == 0:
+        team.team = "blue"
+    else:
+        team.team = "red"
+    team.save()
     return [True, {}]
 

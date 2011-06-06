@@ -1,7 +1,7 @@
 from django.http import HttpResponseRedirect as redirect, HttpResponse
 from django.shortcuts import get_object_or_404
 from djangohelpers.lib import rendered_with, allow_http
-from bagels.main.models import GameRoom, Board, Item
+from bagels.main.models import GameRoom, Board, Item, UserTeam
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from restclient import GET
@@ -25,6 +25,11 @@ def room(request, room_id):
         'game_specific_head': board.game_specific_head(),
         }
 
+@allow_http("GET")
+def game_user_team(request, room_id, username):
+    team = get_object_or_404(UserTeam, game__id=room_id, user__username=username)
+    return HttpResponse(team.team, mimetype="text/plain")
+    
 @allow_http("GET")
 def room_json(request, room_id):
     room = get_object_or_404(GameRoom, pk=room_id)

@@ -16,6 +16,7 @@ urlpatterns = patterns(
     (r'^unsubscribe$', 'bagels.main.hookbox.unsubscribe'),
 
     url(r'^(?P<room_id>\d+)/$', 'bagels.main.views.room', name='game-view'),
+    url(r'^(?P<room_id>\d+)/team/(?P<username>.+)/$', 'bagels.main.views.game_user_team'),
     url(r'^(?P<room_id>\d+)/json/$', 'bagels.main.views.room_json', name='game-json'),
     url(r'^(?P<room_id>\d+)/move/$', 'bagels.main.views.room_move', name='game-move'),
     url(r'^(?P<room_id>\d+)/act/$', 'bagels.main.views.room_act', name='game-act'),
