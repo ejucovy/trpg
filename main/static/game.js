@@ -167,7 +167,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 
   function hisTurn(team, type) {
       putInChatWindow("It is now " + team + "'s turn to "
-		      + type + ". Please be patient.", "black");
+		      + type + ".", "black");
       game_room.turn_type = null;
   };
   function myTurn(team, type, availableMoves) {
@@ -284,10 +284,11 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
         $.post(game_room.room_url + "ready/");
 
         subscription.onSubscribe = function(frame) {
-          console.log(frame);
-	    putInChatWindow(frame.user + " has joined the game room as the " + game_room.otherteam + " team.");
+	  putInChatWindow(frame.user + " has joined the game room as the " + game_room.otherteam + " team.");
         };
-
+	subscription.onUnsubscribe = function(frame) {
+	  putInChatWindow(frame.user + " has left the game room.");
+	};
         subscription.onPublish = function(frame) {
 	    console && console.log(frame);
 	    if( typeof frame.payload == "string" ) {
