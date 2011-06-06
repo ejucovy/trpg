@@ -10,6 +10,7 @@ class GameRoom(models.Model):
     status = models.TextField()
     board_type = models.TextField()
     present = models.ManyToManyField(User, related_name='present_rooms')
+    vs_cpu = models.BooleanField(default=False)
 
     @models.permalink
     def get_absolute_url(self):
@@ -101,7 +102,6 @@ class CheckersBoard(object):
             item = self.grid[coords]
             if item.data.get("team") != team:
                 continue
-            available_moves.setdefault("[%d, %d]" % coords, [])
             for i in (-1, 1):
                 possibility = (coords[0] + direction, coords[1] + i)
                 if possibility in self.grid:
@@ -110,9 +110,9 @@ class CheckersBoard(object):
                     beyond = (possibility[0] + direction, possibility[1] + i)
                     if beyond in self.grid:
                         continue
-                    available_moves["[%d, %d]" % coords].append(beyond)
+                    available_moves.setdefault("[%d, %d]" % coords, []).append(beyond)
                     continue
-                available_moves["[%d, %d]" % coords].append(possibility)
+                available_moves.setdefault("[%d, %d]" % coords, []).append(possibility)
         if not sum(True for i in available_moves.values() if i):
             # if no available moves, switch to other team
             return self.next_status(status)
@@ -146,7 +146,6 @@ class CheckersBoard(object):
             item = self.grid[coords]
             if item.data.get("team") != team:
                 continue
-            available_moves.setdefault("[%d, %d]" % coords, [])
             for i in (-1, 1):
                 possibility = (coords[0] + direction, coords[1] + i)
                 if possibility in self.grid:
@@ -155,9 +154,9 @@ class CheckersBoard(object):
                     beyond = (possibility[0] + direction, possibility[1] + i)
                     if beyond in self.grid:
                         continue
-                    available_moves["[%d, %d]" % coords].append(beyond)
+                    available_moves.setdefault("[%d, %d]" % coords, []).append(beyond)
                     continue
-                available_moves["[%d, %d]" % coords].append(possibility)
+                available_moves.setdefault("[%d, %d]" % coords, []).append(possibility)
         if not sum(True for i in available_moves.values() if i):
             # if no available moves, switch to other team
             return self.describe_turn(status)
