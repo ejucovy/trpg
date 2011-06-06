@@ -127,6 +127,7 @@ def room_act(request, room_id):
     msgs = i18n.attack(actor, target, 
                        actor_before, target_before)
     room.save_board(board)
+    room.status = board.next_status(room.status)
     room.ready.clear()
     room.save()
 
