@@ -44,8 +44,6 @@ class UserTeam(models.Model):
     game = models.ForeignKey(GameRoom)
     team = models.TextField()
 
-site.register(GameRoom)
-
 class Item(object):
     def __init__(self, **kw):
         self.data = kw
@@ -186,7 +184,10 @@ class CheckersBoard(object):
         board = cls()
         for coord in data:
             x, y = eval(coord)
-            item = Item(**data[coord])
+            copy = dict()
+            for key, val in data[coord].items():
+                copy[str(key)] = val
+            item = Item(**copy)
             board.add_item(x, y, item)
         return board
 
@@ -344,7 +345,10 @@ class Board(object):
         board = cls()
         for coord in data:
             x, y = eval(coord)
-            item = Item(**data[coord])
+            copy = dict()
+            for key, val in data[coord].items():
+                copy[str(key)] = val
+            item = Item(**copy)
             board.add_item(x, y, item)
         return board
 
