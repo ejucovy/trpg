@@ -170,22 +170,21 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 		      + type + ".", "black");
       game_room.turn_type = null;
   };
-  function myTurn(team, type, availableMoves) {
+  function myTurn(team, type, availableActions) {
     if( type == "move") {
-	putInChatWindow("It is now your turn! Click on a unit to move it.", "black");
-	for( var coords in availableMoves ) {
-	    foo = coords;
-	    var x = eval(coords)[0]; var y = eval(coords)[1];
-	    tr = $("#board tr")[x];
-	    td = $(tr).find("td")[y];
-	    console.log(x, y, tr, td);
-	    $(td).children("div.item").data("sprite").addClass("ready");
-	    $(td).children("div.item").data("availableMoves", availableMoves[coords]);
-	}
+      var availableMoves = availableActions.move;
+      putInChatWindow("It is now your turn! Click on a unit to move it.", "black");
+      for( var coords in availableMoves ) {
+	var x = eval(coords)[0]; var y = eval(coords)[1];
+	tr = $("#board tr")[x];
+	td = $(tr).find("td")[y];
+	$(td).children("div.item").data("sprite").addClass("ready");
+	$(td).children("div.item").data("availableMoves", availableMoves[coords]);
+      }
     } else if( type == "act" ) {
-	putInChatWindow("It is now your turn! Click on a unit to act.", "black");
-	var sel = "div.sprite[data-team=" + window.team + "]";
-	$(sel).addClass("ready");
+      putInChatWindow("It is now your turn! Click on a unit to act.", "black");
+      var sel = "div.sprite[data-team=" + window.team + "]";
+      $(sel).addClass("ready");
     }
     game_room.turn_type = type;
   };
@@ -247,7 +246,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
         reloadBoard(board);
 	var type = payload.turntype;
         if( window.team == team ) {
-	    myTurn(team, type, payload.available_moves);
+	    myTurn(team, type, payload.available_actions);
         } else {
           hisTurn(team, type);
         }

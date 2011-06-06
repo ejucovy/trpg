@@ -50,9 +50,9 @@ def room_ready(request, room_id):
     room.ready.add(user)
     if room.ready.count() == 2:
         board = room.load_board()
-        team, status, type, available_moves = board.describe_turn(room.status)
+        team, status, type, available_actions = board.describe_turn(room.status)
 
-        extra_data = dict(available_moves=available_moves)
+        extra_data = dict(available_actions=available_actions)
         announce_turn(room, team, type, extra_data)
 
     return HttpResponse("ok")
@@ -84,8 +84,7 @@ def room_move(request, room_id):
 
     room.save_board(board)
 
-    team, status, type, moves = board.describe_turn(room.status)
-    room.status = status
+    room.status = board.next_status(room.status)
 
     room.ready.clear()
     room.save()

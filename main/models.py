@@ -172,6 +172,29 @@ class Board(object):
         return x > -1 and x < self.size()[0] \
             and y > -1 and y < self.size()[1]
 
+    def next_status(self, status):
+        if not status:
+            return "move: blue"
+
+        if "blue" in status:
+            team = "blue"
+            next_team = "red"
+        else:
+            team = "red"
+            next_team = "blue"
+        this_team = next_team
+        
+        type = "move"
+        if "act" not in status:
+            for coords in self.units(team):
+                if self.adjacent_units(coords[0], coords[1], next_team):
+                    type = "act"
+                    this_team = team
+                    break
+
+        status = "%s: %s" % (type, this_team)
+        return status
+
     def describe_turn(self, status):
         """
         Return (team, status, available_moves)
@@ -188,14 +211,9 @@ class Board(object):
                 next_team = "blue"
             this_team = next_team
         
-            if "act" not in status:
-                for coords in self.units(team):
-                    if self.adjacent_units(coords[0], coords[1], next_team):
-                        type = "act"
-                        this_team = team
-
-        available_moves = {}
+        available_actions = {}
         if type == "move":
+            available_moves = {}
             for coords in self.units(this_team):
                 unit = self.get_item(*coords)
                 mp = int(unit.data["move"])
@@ -203,9 +221,10 @@ class Board(object):
                     for y in range(coords[1]-mp, coords[1]+mp+1):
                         if self.in_range(x, y) and not self.has_item(x, y):
                             available_moves.setdefault("[%d, %d]" % coords, []).append((x, y))
+            available_actions['move'] = available_moves
 
         status = "%s: %s" % (type, this_team)
-        return (this_team, status, type, available_moves)
+        return (this_team, status, type, available_actions)
         
 
     def start_board(self):
