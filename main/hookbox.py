@@ -36,6 +36,9 @@ def unsubscribe(request):
     user = User.objects.get(username=name)
 
     room.present.remove(user)
+    if user in room.ready.all():
+        room.ready.remove(user)
+
     return [True, {}]
 
 @csrf_exempt

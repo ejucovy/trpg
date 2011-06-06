@@ -43,13 +43,14 @@ def room_ready(request, room_id):
 
     name = request.COOKIES['user']
     user = User.objects.get(username=name)
-    room.ready.add(user)
 
+    if user in room.ready.all():
+        return HttpResponse("ok")
+
+    room.ready.add(user)
     if room.ready.count() == 2:
         board = room.load_board()
         team, status, type, available_moves = board.next_turn(room.status)
-
-        room.ready.clear()
 
         room.status = status
         room.save()
@@ -86,6 +87,7 @@ def room_move(request, room_id):
         board.pop_item(rr, cc)
 
     room.save_board(board)
+    room.ready.clear()
     room.save()
 
     announce_move(room, (row, col), (row1, col1), name)
@@ -124,6 +126,7 @@ def room_act(request, room_id):
     msgs = i18n.attack(actor, target, 
                        actor_before, target_before)
     room.save_board(board)
+    room.ready.clear()
     room.save()
 
     announce_action(room, action, 
@@ -195,7 +198,7 @@ def announce_turn(room, team, type, extra_data={}):
 
 @allow_http("POST")
 def create_room(request):
-    room = GameRoom(board_type=request.POST['gametype'])
+    room = GameRoom(board_type=request.POST['gametype'], status="starting")
     board = room.start_board()
     room.save_board(board)
     room.save()
