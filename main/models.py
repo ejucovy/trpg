@@ -75,6 +75,51 @@ class CheckersBoard(object):
             for i in range(j % 2, 8, 2):
                 self.add_item(j, i, Item(type="pawn", team="blue"))
 
+    def next_status(self, status):
+        if "red" in status:
+            if "jump" in status:
+                team = "red"
+                direction = 1
+                jumper = eval(status.split(":")[-1])
+                movable_coords = [jumper]
+            else:
+                team = "blue"
+                direction = -1
+                movable_coords = self.grid.keys()
+        else:
+            if "jump" in status:
+                team = "blue"
+                direction = -1
+                jumper = eval(status.split(":")[-1])
+                movable_coords = [jumper]
+            else:
+                team = "red"
+                direction = 1
+                movable_coords = self.grid.keys()
+        
+        status = "%s: move" % team
+        available_moves = {}
+        for coords in movable_coords:
+            item = self.grid[coords]
+            if item.data.get("team") != team:
+                continue
+            available_moves.setdefault("[%d, %d]" % coords, [])
+            for i in (-1, 1):
+                possibility = (coords[0] + direction, coords[1] + i)
+                if possibility in self.grid:
+                    if self.grid[possibility].data.get("team") == team:
+                        continue
+                    beyond = (possibility[0] + direction, possibility[1] + i)
+                    if beyond in self.grid:
+                        continue
+                    available_moves["[%d, %d]" % coords].append(beyond)
+                    continue
+                available_moves["[%d, %d]" % coords].append(possibility)
+        if not sum(True for i in available_moves.values() if i):
+            # if no available moves, switch to other team
+            return self.next_status(status)
+        return status
+
     def describe_turn(self, status):
         if "red" in status:
             if "jump" in status:
@@ -119,7 +164,7 @@ class CheckersBoard(object):
             # if no available moves, switch to other team
             return self.describe_turn(status)
 
-        return (team, status, "move", available_moves)
+        return (team, status, "move", dict(move=available_moves))
 
     def get_item(self, x, y):
         return self.grid[(x, y)]
