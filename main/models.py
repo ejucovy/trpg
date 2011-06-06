@@ -222,6 +222,14 @@ class Board(object):
                         if self.in_range(x, y) and not self.has_item(x, y):
                             available_moves.setdefault("[%d, %d]" % coords, []).append((x, y))
             available_actions['move'] = available_moves
+        elif type == "act":
+            available_attack = {}
+            for coords in self.unit(this_team):
+                enemies = self.adjacent_units(coords[0], coords[1], next_team)
+                for enemy in enemies:
+                    available_attack.setdefault(
+                        "[%s, %s]" % coords, []).append(enemy)
+            available_actions['attack'] = available_attack
 
         status = "%s: %s" % (type, this_team)
         return (this_team, status, type, available_actions)

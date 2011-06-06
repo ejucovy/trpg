@@ -129,25 +129,24 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
       $(".sprite.ready").live("click", function() {
         $("table#board td.available").removeClass("available");
         var item = window.unit = $(this).data("item");
-	var minCol; var maxCol; var minRow; var maxRow;
-	var filter; var each;
 	if( game_room.turn_type == "move" ) {
-	    var moves = item.data("availableMoves");
-	    for( var i=0; i<moves.length; ++i ) {
-		var coor = moves[i];
-		$($($("#board tr")[coor[0]]).children("td")[coor[1]])
-		    .addClass("available");
-	    }
-	    putInChatWindow("Now click on a square to move to; " +
-			    "or click on a different unit to move.", "black");
+	  var moves = item.data("availableMoves");
+	  for( var i=0; i<moves.length; ++i ) {
+	    var coor = moves[i];
+	    $($($("#board tr")[coor[0]]).children("td")[coor[1]])
+	      .addClass("available");
+	  }
+	  putInChatWindow("Now click on a square to move to; " +
+			  "or click on a different unit to move.");
 	} else if( game_room.turn_type == "act" ) {
-	  var col = $(item).parent("td").index();
-          var row = $(item).parent("td").parent("tr").index();
-	  minCol = Math.max(0, col-1);
-          maxCol = Math.min(9, col+1);
-          minRow = Math.max(0, row-1);
-          maxRow = Math.min(9, row+1);
-
+	  var actions = item.data("availableAttacks");
+	  var attack = actions.attack;
+	  for( var i=0; i<attack.length; ++i ) {
+	    var coor = attack[i];
+	    $($($("#board tr")[coor[0]]).children("td")[coor[1]])
+	      .addClass("available")
+	      .find("div.item").data("sprite").addClass("availabletarget");
+	  }
 	  filter = function() {
 	    if( $(this).find("div.item").length != 1 ) return false;
 	    if( $(this).find("div.item")[0] == item[0] ) return false;
@@ -155,13 +154,8 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 	    if( $(this).find("div.item").data("team") == window.team ) return false;
 	    return true;
 	  };
-          each = function() { $(this).find("div.item").data("sprite").addClass("availabletarget"); };
 	  putInChatWindow("Now click on a square to attack; " +
-			  "or click on a different unit to act.", "black");
-	  $("table#board tr").slice(minRow, maxRow+1).each(function() {
-		  $(this).find("td").slice(minCol, maxCol+1)
-		      .filter(filter).addClass("available").each(each);
-	      });
+			  "or click on a different unit to act.");
 	}
       });
 
@@ -182,9 +176,15 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
 	$(td).children("div.item").data("availableMoves", availableMoves[coords]);
       }
     } else if( type == "act" ) {
+      var availableAttacks = availableActions.attack;
       putInChatWindow("It is now your turn! Click on a unit to act.", "black");
-      var sel = "div.sprite[data-team=" + window.team + "]";
-      $(sel).addClass("ready");
+      for( var coords in availableAttacks ) {
+	var x = eval(coords)[0]; var y = eval(coords)[1];
+	tr = $("#board tr")[x];
+	td = $(tr).find("td")[y];
+	$(td).children("div.item").data("sprite").addClass("ready");
+	$(td).children("div.item").data("availableAttacks", availableAttacks[coords]);
+      }
     }
     game_room.turn_type = type;
   };
