@@ -177,6 +177,19 @@ class CheckersBoard(object):
         del self.grid[(x, y)]
         return item
 
+    def act(self, room, row, col, row1, col1, action_type):
+        if action_type == 'move':
+            item = self.pop_item(row, col)
+            self.add_item(row1, col1, item)
+            
+            # if it's a jump, change the status and eliminate the jumpee
+            if abs(row1 - row) == 2 and abs(col1 - col) == 2:
+                team, action = room.status.split(":")
+                room.status = "%s: jump:(%s, %s)" % (team, row1, col1)
+                rr = row - (row - row1) / 2
+                cc = col - (col - col1) / 2
+                board.pop_item(rr, cc)
+
     @classmethod
     def load(cls, json):
         data = simplejson.loads(json)
@@ -209,6 +222,12 @@ class Board(object):
     });
 </script>
 """
+
+    def act(self, room, row, col, row1, col1, action_type):
+        if action_type == 'move':
+            item = self.pop_item(row, col)
+            self.add_item(row1, col1, item)
+
 
     def size(self):
         return (10, 10)

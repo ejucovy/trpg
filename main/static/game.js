@@ -92,7 +92,9 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
       $(".item").removeData("availableMoves");
       $.post(game_room.room_url + "move/",
 	{team: window.team,
-	 c0: fromCol, c1: col, r0: fromRow, r1: row});
+	 c0: fromCol, c1: col, r0: fromRow, r1: row,
+	 actionType: 'move'
+	});
       // TODO: handle error response, and move window.unit = null to success handler
     } else if( game_room.turn_type == "act" ) {
       var target = $(this).find("div.item");

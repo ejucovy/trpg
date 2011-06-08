@@ -73,9 +73,10 @@ def room_ready(request, room_id):
                 fake_request.POST['r1'] = to_[0]
                 fake_request.POST['c1'] = to_[1]
                 if action == "attack":
-                    fake_request.POST['action'] = 'attack'
+                    fake_request.POST['actionType'] = 'attack'
                     room_act(fake_request, room.id)
                 elif action == "move":
+                    fake_request.POST['actionType'] = 'move'
                     room_move(fake_request, room.id)
 
                 return HttpResponse("ok")
@@ -94,21 +95,15 @@ def room_move(request, room_id):
     col = int(request.POST['c0'])
 
     board = room.load_board()
-    item = board.pop_item(row, col)
 
-    team = item.data.get("team")
+    team = board.get_item(row, col).data.get("team")
 
     row1 = int(request.POST['r1'])
     col1 = int(request.POST['c1'])
 
-    board.add_item(row1, col1, item)
+    action_type = request.POST['actionType']
 
-    if room.board_type == "checkers" and abs(row1-row) == 2 and abs(col1-col) == 2:
-        team, action = room.status.split(":")
-        room.status = "%s: jump:(%s, %s)" % (team, row1, col1)
-        rr = row - (row-row1) / 2
-        cc = col - (col-col1) / 2
-        board.pop_item(rr, cc)
+    board.act(room, row, col, row1, col1, action_type)
 
     room.save_board(board)
 
@@ -127,8 +122,8 @@ def room_act(request, room_id):
 
     row = int(request.POST['r1'])
     col = int(request.POST['c1'])
-    action = request.POST['action']
-    assert action == "attack"
+    action_type = request.POST['actionType']
+    assert action_type == "attack"
 
     srcrow = int(request.POST['r0'])
     srccol = int(request.POST['c0'])
@@ -157,7 +152,7 @@ def room_act(request, room_id):
     room.ready.clear()
     room.save()
 
-    announce_action(room, action, 
+    announce_action(room, action_type, 
                     (srcrow, srccol), (row, col), 
                     team, msgs)
     return HttpResponse("ok")
