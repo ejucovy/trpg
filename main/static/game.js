@@ -111,7 +111,7 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
       $(".ready").removeClass("ready");
 
       $.post(game_room.room_url + "act/",
-	{team: window.team, action: 'attack',
+	{team: window.team, actionType: 'attack',
 	 c0: c0, r0: r0,
          c1: c1, r1: r1});
       // TODO: handle error response, and move window.unit = null to success handler
