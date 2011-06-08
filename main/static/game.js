@@ -48,11 +48,25 @@ var GameRoom = function(room_url, username, game_id, hookbox_url) {
   function infoAbout(unit) {
     var data = {};
     for( var i in unit.data() ) {
-      if( i && i != "sprite" ) {
+      if( i && i != "sprite"
+	  && i != "availableMoves"
+	  && i != "availableAttacks"
+	) {
         data[i] = unit.data(i);
       }
     }
-    $("#info").text(JSON.stringify(data));
+    $("#info").empty();
+    $("<div />")
+      .css("height", 64)
+      .css("width", 64)
+      .css("background-image",
+	   unit.data("sprite").css("background-image"))
+      .appendTo("#info");
+    for( var i in data ) {
+      $("<div />")
+	.html("<b>"+i+"</b>: " + data[i])
+	.appendTo("#info");
+    }
   }
   $(".sprite").live("hover", function() {
 		      infoAbout($(this).data("item"));

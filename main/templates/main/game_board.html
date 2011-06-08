@@ -15,6 +15,11 @@
 
     $(window).load(function() {
       $("form input").width($("#chat").width());
+      $("#infocontainer")
+          .css("position", "absolute")
+          .css("top", $("#board").offset().top)
+          .css("left", $("#board").width() + 100);
+
       var room = new GameRoom("{{room.get_absolute_url}}",
                               username, "{{room.pk}}",
                               "{{HOOKBOX_URL}}"
@@ -32,11 +37,16 @@
       </td>{% endfor %}
     </tr>{% endfor %}
   </table>
-  <h3>Info</h3>
-  <div id="info">
+
+  <div id="infocontainer">
+    <h3>Info</h3>
+    <div id="info">
+      Hover over a unit or obstacle to learn about it.
+    </div>
   </div>
+
   <h3>Chat</h3>
-  <div id="chat" style="height: 4em; overflow-x: auto; overflow-y: scroll"><div></div>
+  <div id="chat" style="height: 8em; overflow-x: auto; overflow-y: scroll"><div></div>
   </div>
   <form onsubmit="gameroom.chat(this); return false;">
     <input type="text" />
