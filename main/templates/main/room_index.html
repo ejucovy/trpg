@@ -2,8 +2,9 @@
 <form method="POST">
   {% csrf_token %}
   <select name="gametype">
-    <option value="trpg">Tactical RPG</option>
+    <option value="tactics">Tactical RPG</option>
     <option value="checkers">Checkers</option>
+    <option value="">Trivial Sample Game</option>
   </select>
   <input type="radio" name="players" value="cpu" checked="checked">Vs computer</input>
   <input type="radio" name="players" value="human">Two players</input>

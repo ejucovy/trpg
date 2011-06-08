@@ -27,7 +27,9 @@ class GameRoom(models.Model):
     def BoardClass(self):
         if self.board_type == "checkers":
             return CheckersBoard
-        return Board
+        elif self.board_type == "tactics":
+            return TacticsBoard
+        return BaseBoard
 
     def start_board(self):
         board = self.BoardClass()
@@ -49,9 +51,127 @@ class Item(object):
     def __init__(self, **kw):
         self.data = kw
 
-class CheckersBoard(object):
+class BaseBoard(object):
+    """
+    Provides common functionality used by all game types.
+    Documents per-game custom functionality that must be implemented.
+    Implements a trivial sample game if not subclassed.
+    """
+
     def __init__(self):
         self.grid = {}
+
+    def get_item(self, x, y):
+        return self.grid[(x, y)]
+
+    def has_item(self, x, y):
+        return (x, y) in self.grid
+        
+    def add_item(self, x, y, item):
+        self.grid[(x, y)] = item
+
+    def pop_item(self, x, y):
+        item = self.grid[(x, y)]
+        del self.grid[(x, y)]
+        return item
+
+    @classmethod
+    def load(cls, json):
+        data = simplejson.loads(json)
+        board = cls()
+        for coord in data:
+            x, y = eval(coord)
+            copy = dict()
+            for key, val in data[coord].items():
+                copy[str(key)] = val
+            item = Item(**copy)
+            board.add_item(x, y, item)
+        return board
+
+    def dump(self):
+        data = {}
+        for (x, y) in self.grid:
+            item = self.grid[(x, y)]
+            data['(%s, %s)' % (x, y)] = item.data
+        return simplejson.dumps(data)
+    
+    def game_specific_head(self):
+        """
+        Games can provide extra HTML to provide,
+        e.g. custom CSS or Javascript to insert.
+        """
+        return """
+<style type="text/css">
+  div.sprite[data-team="red"][data-type="unit"] {
+    background-image: url(/static/images/checkers/red.png);
+  }
+  div.sprite[data-team="blue"][data-type="unit"] {
+    background-image: url(/static/images/checkers/black.png);
+  }
+</style>
+"""
+        
+    def size(self):
+        """
+        Games should provide a (rows, cols) tuple.
+        Theoretically this could be stored statefully
+        in the board's JSON dump; at the moment it's 
+        hardcoded for both game types that have been
+        implemented.
+        """
+        return (10, 10)
+
+    def start_board(self):
+        """
+        Games should perform any initial setup they need,
+        like adding the team's units in the proper places.
+        """
+        self.add_item(0, 0, Item(team="red", type="unit"))
+        self.add_item(9, 9, Item(team="blue", type="unit"))
+
+    def next_status(self, status):
+        """
+        Calculate the next status (a string, persisted in
+        the GameRoom instance) based on the current status.
+        """
+        return "no status"
+        
+    def describe_turn(self, status):
+        """
+        Describe the parameters and potentialities of the next
+        turn that should occur, based on the current status.
+        """
+        import random
+        next_team = random.choice(["blue", "red"])
+        status = "no status"
+        turn_type = "move"
+
+        for coords in self.grid:
+            if self.get_item(*coords).data.get("team") == next_team:
+                break
+        while True:
+            row = random.choice(range(self.size()[0]))
+            col = random.choice(range(self.size()[1]))
+            if not self.has_item(row, col):
+                break
+
+        available_actions = {
+            'move': {
+                "[%d, %d]" % coords: [(row, col)],
+                }
+            }
+        return (next_team, status, turn_type, available_actions)
+
+    def act(self, room, 
+            actor_row, actor_col, target_row, target_col,
+            action_type):
+        """
+        Perform an action from one of the players.
+        """
+        self.add_item(target_row, target_col,
+                      self.pop_item(actor_row, actor_col))
+
+class CheckersBoard(BaseBoard):
 
     def game_specific_head(self):
         return """
@@ -163,20 +283,6 @@ class CheckersBoard(object):
 
         return (team, status, "move", dict(move=available_moves))
 
-    def get_item(self, x, y):
-        return self.grid[(x, y)]
-
-    def has_item(self, x, y):
-        return (x, y) in self.grid
-        
-    def add_item(self, x, y, item):
-        self.grid[(x, y)] = item
-
-    def pop_item(self, x, y):
-        item = self.grid[(x, y)]
-        del self.grid[(x, y)]
-        return item
-
     def act(self, room, row, col, row1, col1, action_type):
         if action_type == 'move':
             item = self.pop_item(row, col)
@@ -190,29 +296,7 @@ class CheckersBoard(object):
                 cc = col - (col - col1) / 2
                 board.pop_item(rr, cc)
 
-    @classmethod
-    def load(cls, json):
-        data = simplejson.loads(json)
-        board = cls()
-        for coord in data:
-            x, y = eval(coord)
-            copy = dict()
-            for key, val in data[coord].items():
-                copy[str(key)] = val
-            item = Item(**copy)
-            board.add_item(x, y, item)
-        return board
-
-    def dump(self):
-        data = {}
-        for (x, y) in self.grid:
-            item = self.grid[(x, y)]
-            data['(%s, %s)' % (x, y)] = item.data
-        return simplejson.dumps(data)
-
-class Board(object):
-    def __init__(self):
-        self.grid = {}
+class TacticsBoard(BaseBoard):
 
     def game_specific_head(self):
         return """
@@ -223,18 +307,31 @@ class Board(object):
 </script>
 """
 
+    def size(self):
+        return (10, 10)
+
     def act(self, room, row, col, row1, col1, action_type):
         if action_type == 'move':
             item = self.pop_item(row, col)
             self.add_item(row1, col1, item)
 
-
-    def size(self):
-        return (10, 10)
-
-    def in_range(self, x, y):
-        return x > -1 and x < self.size()[0] \
-            and y > -1 and y < self.size()[1]
+    def start_board(self):
+        board = self
+        board.add_item(1, 1, Item(type='rock', height=3))
+        board.add_item(2, 2, Item(type='rock', height=3))
+        board.add_item(4, 4, Item(type='rock', height=3))
+        board.add_item(2, 5, Item(type='rock', height=3))
+        board.add_item(5, 4, Item(type='rock', height=3))
+        
+        board.add_item(9, 9, Item(type='unit', job='knight', team='red', health=10, move=2))
+        board.add_item(8, 9, Item(type='unit', job='winger', team='red', health=10, move=4))
+        board.add_item(7, 9, Item(type='unit', job='healer', team='red', health=10, move=3))
+        board.add_item(6, 9, Item(type='unit', job='wizard', team='red', health=10, move=2))
+        
+        board.add_item(0, 0, Item(type='unit', job='knight', team='blue', health=10, move=2))
+        board.add_item(1, 0, Item(type='unit', job='winger', team='blue', health=10, move=4))
+        board.add_item(2, 0, Item(type='unit', job='healer', team='blue', health=10, move=3))
+        board.add_item(3, 0, Item(type='unit', job='smallrus', team='blue', health=10, move=3))
 
     def next_status(self, status):
         if not status:
@@ -260,9 +357,6 @@ class Board(object):
         return status
 
     def describe_turn(self, status):
-        """
-        Return (team, status, available_moves)
-        """
         if "act" in status:
             type = "act"
         else:
@@ -300,25 +394,11 @@ class Board(object):
         status = "%s: %s" % (type, this_team)
         return (this_team, status, type, available_actions)
         
+        
+    def in_range(self, x, y):
+        return x > -1 and x < self.size()[0] \
+            and y > -1 and y < self.size()[1]
 
-    def start_board(self):
-        board = self
-        board.add_item(1, 1, Item(type='rock', height=3))
-        board.add_item(2, 2, Item(type='rock', height=3))
-        board.add_item(4, 4, Item(type='rock', height=3))
-        board.add_item(2, 5, Item(type='rock', height=3))
-        board.add_item(5, 4, Item(type='rock', height=3))
-        
-        board.add_item(9, 9, Item(type='unit', job='knight', team='red', health=10, move=2))
-        board.add_item(8, 9, Item(type='unit', job='winger', team='red', health=10, move=4))
-        board.add_item(7, 9, Item(type='unit', job='healer', team='red', health=10, move=3))
-        board.add_item(6, 9, Item(type='unit', job='wizard', team='red', health=10, move=2))
-        
-        board.add_item(0, 0, Item(type='unit', job='knight', team='blue', health=10, move=2))
-        board.add_item(1, 0, Item(type='unit', job='winger', team='blue', health=10, move=4))
-        board.add_item(2, 0, Item(type='unit', job='healer', team='blue', health=10, move=3))
-        board.add_item(3, 0, Item(type='unit', job='smallrus', team='blue', health=10, move=3))
-        
     def adjacent_units(self, x, y, team):
         units = []
         for _x in (x-1, x, x+1):
@@ -343,40 +423,6 @@ class Board(object):
             units.append(coords)
         return units
 
-    def get_item(self, x, y):
-        return self.grid[(x, y)]
-
-    def has_item(self, x, y):
-        return (x, y) in self.grid
-        
-    def add_item(self, x, y, item):
-        self.grid[(x, y)] = item
-
-    def pop_item(self, x, y):
-        item = self.grid[(x, y)]
-        del self.grid[(x, y)]
-        return item
-
-    @classmethod
-    def load(cls, json):
-        data = simplejson.loads(json)
-        board = cls()
-        for coord in data:
-            x, y = eval(coord)
-            copy = dict()
-            for key, val in data[coord].items():
-                copy[str(key)] = val
-            item = Item(**copy)
-            board.add_item(x, y, item)
-        return board
-
-    def dump(self):
-        data = {}
-        for (x, y) in self.grid:
-            item = self.grid[(x, y)]
-            data['(%s, %s)' % (x, y)] = item.data
-        return simplejson.dumps(data)
-
 if __name__ == '__main__':
     grid = {
         '(2, 5)': {'type': 'knight', 'color': 'red', 'health': 50},
@@ -384,7 +430,7 @@ if __name__ == '__main__':
         }
     
     data = simplejson.dumps(grid)
-    board = Board.load(data)
+    board = BaseBoard.load(data)
     board.pop_item(1, 7)
     dump = board.dump()
-    Board.load(dump)
+    BaseBoard.load(dump)

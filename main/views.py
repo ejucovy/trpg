@@ -1,7 +1,7 @@
 from django.http import HttpResponseRedirect as redirect, HttpResponse, HttpRequest
 from django.shortcuts import get_object_or_404
 from djangohelpers.lib import rendered_with, allow_http
-from bagels.main.models import GameRoom, Board, Item, UserTeam
+from bagels.main.models import GameRoom, Item, UserTeam
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
 from restclient import GET
