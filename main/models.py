@@ -323,15 +323,15 @@ class TacticsBoard(BaseBoard):
         board.add_item(2, 5, Item(type='rock', height=3))
         board.add_item(5, 4, Item(type='rock', height=3))
         
-        board.add_item(9, 9, Item(type='unit', job='knight', team='red', health=10, move=2))
+        board.add_item(9, 9, Item(type='unit', job='knight', team='red', health=14, move=2))
         board.add_item(8, 9, Item(type='unit', job='winger', team='red', health=10, move=4))
-        board.add_item(7, 9, Item(type='unit', job='healer', team='red', health=10, move=3))
+        board.add_item(7, 9, Item(type='unit', job='healer', team='red', health=6, move=3))
         board.add_item(6, 9, Item(type='unit', job='wizard', team='red', health=10, move=2))
         
-        board.add_item(0, 0, Item(type='unit', job='knight', team='blue', health=10, move=2))
+        board.add_item(0, 0, Item(type='unit', job='knight', team='blue', health=14, move=2))
         board.add_item(1, 0, Item(type='unit', job='winger', team='blue', health=10, move=4))
-        board.add_item(2, 0, Item(type='unit', job='healer', team='blue', health=10, move=3))
-        board.add_item(3, 0, Item(type='unit', job='smallrus', team='blue', health=10, move=3))
+        board.add_item(2, 0, Item(type='unit', job='healer', team='blue', health=6, move=3))
+        board.add_item(3, 0, Item(type='unit', job='smallrus', team='blue', health=7, move=3))
 
     def next_status(self, status):
         if not status:
@@ -348,7 +348,11 @@ class TacticsBoard(BaseBoard):
         type = "move"
         if "act" not in status:
             for coords in self.units(team):
-                if self.adjacent_units(coords[0], coords[1], next_team):
+                radius = 1
+                if self.get_item(*coords).data.get("job") == "wizard":
+                    radius = 3
+                enemies = self.adjacent_units(coords[0], coords[1], next_team, radius)
+                if enemies:
                     type = "act"
                     this_team = team
                     break
@@ -385,7 +389,10 @@ class TacticsBoard(BaseBoard):
         elif type == "act":
             available_attack = {}
             for coords in self.units(this_team):
-                enemies = self.adjacent_units(coords[0], coords[1], next_team)
+                radius = 1
+                if self.get_item(*coords).data.get("job") == "wizard":
+                    radius = 3
+                enemies = self.adjacent_units(coords[0], coords[1], next_team, radius)
                 for enemy in enemies:
                     available_attack.setdefault(
                         "[%s, %s]" % coords, []).append(enemy)
@@ -399,10 +406,10 @@ class TacticsBoard(BaseBoard):
         return x > -1 and x < self.size()[0] \
             and y > -1 and y < self.size()[1]
 
-    def adjacent_units(self, x, y, team):
+    def adjacent_units(self, x, y, team, radius=1):
         units = []
-        for _x in (x-1, x, x+1):
-            for _y in (y-1, y, y+1):
+        for _x in range(x - radius, x + radius + 1):
+            for _y in range(y - radius, y + radius + 1):
                 if not self.has_item(_x, _y):
                     continue
                 item = self.grid[(_x, _y)]
