@@ -94,6 +94,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.staticfiles',
     'concurrent_server',
+    'djsupervisor',
     'bagels.main',
 )
 
